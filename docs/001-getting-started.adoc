@@ -1,5 +1,7 @@
 = 1. Getting started
 
+== Creating a backend project
+
 Since the frontend depends on the backend to get data, we will get started with the latter, use Cargo to create a new Rust project.
 
 [source,sh]
@@ -14,7 +16,44 @@ Then we can check that everything works running:
 [source,sh]
 ----
 $ cargo run
-> Hello World!
+» Hello World!
 ----
 
 Cargo set the project for us and it already compiles and runs.
+
+== A _"Hello World!"_ Server
+
+Actix makes it really easy for us to get a web server up and running in no time. Install it as a dependency.
+
+[source,sh]
+----
+$ cargo add actix-web
+----
+
+And we can construct a _"Hello World"_ server using the following code in main.
+
+[source,rs]
+----
+use actix_web::{get, App, HttpResponse, HttpServer, Responder};
+
+#[get("/")]
+async fn hello() -> impl Responder {
+    HttpResponse::Ok().body("Hello world!")
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| App::new().service(hello))
+        .bind(("127.0.0.1", 8080))?
+        .run()
+        .await
+}
+----
+
+Then we run the code using `cargo run` and we can see the response when we request that route.
+
+[source,sh]
+----
+$ curl "http://localhost:8080"
+» Hello World!
+----
