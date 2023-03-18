@@ -1,0 +1,20 @@
+= 1. Getting started
+
+Since the frontend depends on the backend to get data, we will get started with the latter, use Cargo to create a new Rust project.
+
+[source,sh]
+----
+$ cargo new backend --vcs none
+----
+
+NOTE: We use the `--vcs none` flag because we are planning on having both the backend and the frontend under a parent Git directory.
+
+Then we can check that everything works running:
+
+[source,sh]
+----
+$ cargo run
+> Hello World!
+----
+
+Cargo set the project for us and it already compiles and runs.
