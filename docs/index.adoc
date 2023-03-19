@@ -1,0 +1,30 @@
+// Settings:
+:icons: font
+:icon-set: fas
+:stylesheet: site.css
+:experimental:
+:toc:
+:toc: left
+:sectnums:
+:linkcss:
+:source-highlighter: rouge
+:rouge-style: monokai
+ifndef::env-github[:icons: font]
+ifdef::env-github,env-browser[]
+endif::[]
+ifdef::env-github[]
+:caution-caption: :fire:
+:important-caption: :exclamation:
+:note-caption: :paperclip:
+:tip-caption: :bulb:
+:warning-caption: :warning:
+endif::[]
+
+= I Read Rust
+Raul Sauco
+
+A tutorial to build a Flutter/Dart - Rust/Actix/Async-graphql - GraphQL full stack application.
+
+:leveloffset: +1
+include::001-getting-started.adoc[]
+:leveloffset: -1

@@ -1,10 +1,25 @@
-= 1. Getting started
+// Settings:
+:stylesheet: site.css
+:sectnums:
+:experimental:
+ifndef::env-github[:icons: font]
+ifdef::env-github,env-browser[]
+endif::[]
+ifdef::env-github[]
+:caution-caption: :fire:
+:important-caption: :exclamation:
+:note-caption: :paperclip:
+:tip-caption: :bulb:
+:warning-caption: :warning:
+endif::[]
+
+= Getting started
 
 == Creating a backend project
 
 Since the frontend depends on the backend to get data, we will get started with the latter, use Cargo to create a new Rust project.
 
-[source,sh]
+[source,console]
 ----
 $ cargo new backend --vcs none
 ----
@@ -13,7 +28,7 @@ NOTE: We use the `--vcs none` flag because we are planning on having both the ba
 
 Then we can check that everything works running:
 
-[source,sh]
+[source,console]
 ----
 $ cargo run
 » Hello World!
@@ -25,7 +40,7 @@ Cargo set the project for us and it already compiles and runs.
 
 Actix makes it really easy for us to get a web server up and running in no time. Install it as a dependency.
 
-[source,sh]
+[source,console]
 ----
 $ cargo add actix-web
 ----
@@ -52,7 +67,7 @@ async fn main() -> std::io::Result<()> {
 
 Then we run the code using `cargo run` and we can see the response when we request that route.
 
-[source,sh]
+[source,console]
 ----
 $ curl "http://localhost:8080"
 » Hello World!
