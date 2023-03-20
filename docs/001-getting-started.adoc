@@ -72,3 +72,110 @@ Then we run the code using `cargo run` and we can see the response when we reque
 $ curl "http://localhost:8080"
 » Hello World!
 ----
+
+== Installing _Async_graphql_
+
+Back on the terminal, we install the required packages.
+
+[source,console]
+$ cargo add async-graphql async-graphql-actix-web
+
+Then we can start to convert our server to GraphQL. 
+
+For Async-graphql to understand the data that we are using, the easiest is to create a `struct` and decorate it with https://async-graphql.github.io/async-graphql/en/define_simple_object.html[`SimpleObject`], our _very_ simple book `struct`, for this step, ends as follows.
+
+.models.rs
+[source,rs]
+----
+use async_graphql::SimpleObject;
+
+#[derive(Clone, SimpleObject)]
+pub struct Book {
+    pub id: usize,
+    pub name: String,
+    pub genre: String,
+    pub author: String,
+}
+----
+
+With the model in place, we can create a schema file, import the model and define a https://async-graphql.github.io/async-graphql/en/query_and_mutation.html[`Query`] and a https://async-graphql.github.io/async-graphql/en/define_schema.html[Schema].
+
+This first version of our server will not support mutations or subscriptions, it will have a `get_book` function that will return fake data for one book.
+
+.schema.rs
+[source,rs]
+----
+use std::collections::HashMap;
+
+use async_graphql::{Context, EmptyMutation, EmptySubscription, Object, Schema};
+
+use crate::model::Book;
+
+pub struct QueryRoot;
+
+#[Object]
+impl QueryRoot {
+    async fn book(&self, _ctx: &Context<'_>, id: Option<usize>) -> Option<Book> {
+        match id {
+            Some(id) => return get_book(id),
+            None => None,
+        }
+    }
+}
+
+fn get_book(id: usize) -> Option<Book> {
+    // ...snip...
+}
+
+/**
+ * The Schema at the moment only has one query.
+ */
+pub type IReadSchema = Schema<QueryRoot, EmptyMutation, EmptySubscription>;
+
+----
+
+With a schema in place, we can import it into main, get rid of the `Responder` that we were using and replace it with two new handlers, both of them for the index route, one will handle `GET` requests and it only serves to send the resources to create a GraphiQL HTML page. 
+
+The second handler, the one that will run for `POST` requests, is the access point for our GraphQL content.
+
+.main.rs
+[source,rs]
+----
+mod model;
+mod schema;
+
+use crate::schema::{IReadSchema, QueryRoot};
+use actix_web::{
+    guard,
+    web::{self, Data},
+    App, HttpResponse, HttpServer, Result,
+};
+use async_graphql::{http::GraphiQLSource, EmptyMutation, EmptySubscription, Schema};
+use async_graphql_actix_web::{GraphQLRequest, GraphQLResponse};
+
+async fn index(schema: web::Data<IReadSchema>, req: GraphQLRequest) -> GraphQLResponse {
+    schema.execute(req.into_inner()).await.into()
+}
+
+async fn index_graphiql() -> Result<HttpResponse> {
+    Ok(HttpResponse::Ok()
+        .content_type("text/html; charset=utf-8")
+        .body(GraphiQLSource::build().endpoint("/").finish()))
+}
+
+#[actix_web::main]
+async fn main() -> std::io::Result<()> {
+    let schema = Schema::build(QueryRoot, EmptyMutation, EmptySubscription).finish();
+    HttpServer::new(move || {
+        App::new()
+            .app_data(Data::new(schema.clone()))
+            .service(web::resource("/").guard(guard::Post()).to(index))
+            .service(web::resource("/").guard(guard::Get()).to(index_graphiql))
+    })
+    .bind(("127.0.0.1", 8000))?
+    .run()
+    .await
+}
+----
+
+With this we have a working GraphQL server that we can query from our browser using GraphiQL.
